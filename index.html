@@ -3,26 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tariq</title>
+    <title>Demo QR Card Generator</title>
+    <!-- QRCode.js library for browser -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body {
-            background-color: #000000;
-            color: #ffffff;
             font-family: Arial, sans-serif;
+            background-color: #f3f4f6;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
+            padding: 20px;
             margin: 0;
         }
-        h1 {
-            font-size: 3.5rem;
-            letter-spacing: 2px;
+        .container {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+            margin-bottom: 20px;
         }
+        h2 { text-align: center; margin-top: 0; color: #1f2937; }
+        p.subtitle { text-align: center; color: #6b7280; font-size: 14px; margin-bottom: 20px; }
+        .form-group {
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+        label { font-size: 14px; font-weight: bold; margin-bottom: 5px; color: #374151; }
+        input {
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #d9a62e;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover { background-color: #b88a24; }
+        #canvasContainer {
+            max-width: 100%;
+            overflow-x: auto;
+            text-align: center;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        /* Hidden div to generate temporary QR element */
+        #qrcode { display: none; }
     </style>
 </head>
 <body>
-    <h1>Tariq</h1>
+
+    <div class="container">
+        <h2>Demo QR Card Generator</h2>
+        <p class="subtitle">Sirf testing/demo ke liye</p>
+        
+        <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="name" value="Shama Jamali Tariq Aziz">
+        </div>
+        <div class="form-group">
+            <label>Demo ID</label>
+            <input type="text" id="demo_id" value="20266977546876">
+        </div>
+        <div class="form-group">
+            <label>Date</label>
+            <input type="text" id="date" value="17 Sep 2026">
+        </div>
+        <div class="form-group">
+            <label>Time</label>
+            <input type="text" id="time" value="09:10 PM">
+        </div>
+
+        <button onclick="generateCard()">Generate DEMO Image</button>
+    </div>
+
+    <div id="canvasContainer">
+        <canvas id="cardCanvas" width="1100" height="700"></canvas>
+    </div>
+
+    <div id="qrcode"></div>
+
+    <script>
+        function generateCard() {
+            const name = document.getElementById('name').value.trim();
+            const demoId = document.getElementById('demo_id').value.trim();
+            const date = document.getElementById('date').value.trim();
+            const time = document.getElementById('time').value.trim();
+
+            if (!name || !demoId || !date || !time) {
+                alert("Name, ID, date aur time sab fill karein.");
+                return;
+            }
+
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = "";
+
+            const qrText = `DEMO-ONLY\nName: ${name}\nDemo ID: ${demoId}\nDate: ${date}\nTime: ${time}\nSTATUS: TEST ONLY - NOT VALID`;
+
+            // Generate QR code JS
+            new QRCode(qrContainer, {
+                text: qrText,
+                width: 330,
+                height: 330,
+                correctLevel : QRCode.CorrectLevel.M
+            });
+
+            setTimeout(() => {
+                const qrImg = qrContainer.querySelector('img');
+                const canvas = document.getElementById('cardCanvas');
+                const ctx = canvas.getContext('2d');
+
+                // Canvas dimensions
+                const W = 1100;
+                const H = 700;
+
+                // Background
+                ctx.fillStyle = "#faf9f5";
+                ctx.fillRect(0, 0, W, H);
+
+                // Card outer border
+                ctx.strokeStyle = "#d9a62e";
+                ctx.lineWidth = 5;
+                ctx.fillStyle = "#ffffff";
+                
+                ctx.beginPath();
+                ctx.roundRect(20, 20, W - 40, H - 40, 28);
+                ctx.fill();
+                ctx.stroke();
+
+                // DEMO badge
+                ctx.fillStyle = "#fff0c7";
+                ctx.strokeStyle = "#d9a62e";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(55, 50, 205, 55, 15);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = "#1f2937";
+                ctx.font = "bold 25px Arial";
+                ctx.fillText("DEMO / TEST", 78, 88);
+
+                // Text fields
+                ctx.font = "bold 38px Arial";
+                ctx.fillText(name, 55, 180);
+
+                ctx.font = "30px Arial";
+                ctx.fillText(`Demo ID: ${demoId}`, 55, 245);
+
+                ctx.font = "28px Arial";
+                ctx.fillText(`Date: ${date}`, 55, 300);
+                ctx.fillText(`Time: ${time}`, 55, 350);
+
+                // Arch line
+                ctx.strokeStyle = "#d9a62e";
+                ctx.lineWidth = 20;
+                ctx.lineCap = "round";
+                ctx.beginPath();
+                ctx.moveTo(390, 300);
+                ctx.lineTo(390, 175);
+                ctx.lineTo(525, 90);
+                ctx.lineTo(660, 175);
+                ctx.lineTo(660, 300);
+                ctx.stroke();
+
+                // Draw QR Code
+                if (qrImg) {
+                    ctx.drawImage(qrImg, 720, 190, 330, 330);
+                }
+
+                // Disclaimer text
+                ctx.fillStyle = "#6b7280";
+                ctx.font = "bold 18px Arial";
+                ctx.fillText("TEST QR — NOT AN OFFICIAL CREDENTIAL", 700, 560);
+            }, 100);
+        }
+
+        // Auto render initial card on page load
+        window.onload = generateCard;
+    </script>
+
 </body>
 </html>
-
