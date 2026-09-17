@@ -7,42 +7,106 @@
     <!-- QRCode.js library for browser -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --label-color: #374151;
+            --input-bg: #ffffff;
+            --input-border: #d1d5db;
+            --input-text: #1f2937;
+            --btn-bg: #d9a62e;
+            --btn-hover: #b88a24;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #f3f4f6;
+            --label-color: #d1d5db;
+            --input-bg: #2d2d2d;
+            --input-border: #4b5563;
+            --input-text: #ffffff;
+            --btn-bg: #d9a62e;
+            --btn-hover: #e5b338;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            background-color: #f3f4f6;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px;
             margin: 0;
+            transition: background-color 0.3s, color 0.3s;
         }
+
+        .header-bar {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: -10px;
+            margin-top: 10px;
+        }
+
+        .theme-toggle-btn {
+            padding: 8px 16px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 2px solid var(--btn-bg);
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            transform: scale(1.05);
+        }
+
         .container {
-            background: #ffffff;
+            background: var(--card-bg);
             padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
             max-width: 500px;
             width: 100%;
+            margin-top: 15px;
             margin-bottom: 20px;
+            transition: background 0.3s;
         }
-        h2 { text-align: center; margin-top: 0; color: #1f2937; }
-        p.subtitle { text-align: center; color: #6b7280; font-size: 14px; margin-bottom: 20px; }
+
+        h2 { text-align: center; margin-top: 0; color: var(--text-color); }
+        p.subtitle { text-align: center; color: #9ca3af; font-size: 14px; margin-bottom: 20px; }
+        
         .form-group {
             margin-bottom: 12px;
             display: flex;
             flex-direction: column;
         }
-        label { font-size: 14px; font-weight: bold; margin-bottom: 5px; color: #374151; }
+
+        label { font-size: 14px; font-weight: bold; margin-bottom: 5px; color: var(--label-color); }
+        
         input {
             padding: 10px;
-            border: 1px solid #d1d5db;
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            border: 1px solid var(--input-border);
             border-radius: 6px;
             font-size: 14px;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
         }
-        button {
+
+        .action-btn {
             width: 100%;
             padding: 12px;
-            background-color: #d9a62e;
+            background-color: var(--btn-bg);
             color: white;
             border: none;
             border-radius: 6px;
@@ -50,24 +114,35 @@
             font-weight: bold;
             cursor: pointer;
             margin-top: 10px;
+            transition: background-color 0.3s;
         }
-        button:hover { background-color: #b88a24; }
+
+        .action-btn:hover { background-color: var(--btn-hover); }
+
         #canvasContainer {
             max-width: 100%;
             overflow-x: auto;
             text-align: center;
         }
+
         canvas {
             max-width: 100%;
             height: auto;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
+
         /* Hidden div to generate temporary QR element */
         #qrcode { display: none; }
     </style>
 </head>
 <body>
+
+    <div class="header-bar">
+        <button class="theme-toggle-btn" onclick="toggleDarkMode()">
+            <span id="themeIcon">🌙</span> <span id="themeText">Dark Mode</span>
+        </button>
+    </div>
 
     <div class="container">
         <h2>Demo QR Card Generator</h2>
@@ -90,7 +165,7 @@
             <input type="text" id="time" value="09:10 PM">
         </div>
 
-        <button onclick="generateCard()">Generate DEMO Image</button>
+        <button class="action-btn" onclick="generateCard()">Generate DEMO Image</button>
     </div>
 
     <div id="canvasContainer">
@@ -100,6 +175,13 @@
     <div id="qrcode"></div>
 
     <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+            document.getElementById('themeText').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+        }
+
         function generateCard() {
             const name = document.getElementById('name').value.trim();
             const demoId = document.getElementById('demo_id').value.trim();
