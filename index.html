@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo QR Card Generator</title>
+    <title>Demo QR Pass Generator</title>
     <!-- QRCode.js library for browser -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -15,8 +15,8 @@
             --input-bg: #ffffff;
             --input-border: #d1d5db;
             --input-text: #1f2937;
-            --btn-bg: #d9a62e;
-            --btn-hover: #b88a24;
+            --btn-bg: #1e293b;
+            --btn-hover: #0f172a;
         }
 
         body.dark-mode {
@@ -27,8 +27,8 @@
             --input-bg: #2d2d2d;
             --input-border: #4b5563;
             --input-text: #ffffff;
-            --btn-bg: #d9a62e;
-            --btn-hover: #e5b338;
+            --btn-bg: #38bdf8;
+            --btn-hover: #0284c7;
         }
 
         body {
@@ -45,7 +45,7 @@
 
         .header-bar {
             width: 100%;
-            max-width: 500px;
+            max-width: 480px;
             display: flex;
             justify-content: flex-end;
             margin-bottom: -10px;
@@ -74,12 +74,13 @@
             background: var(--card-bg);
             padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            max-width: 500px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            max-width: 480px;
             width: 100%;
             margin-top: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             transition: background 0.3s;
+            box-sizing: border-box;
         }
 
         h2 { text-align: center; margin-top: 0; color: var(--text-color); }
@@ -128,8 +129,8 @@
         canvas {
             max-width: 100%;
             height: auto;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
         }
 
         /* Hidden div to generate temporary QR element */
@@ -145,31 +146,39 @@
     </div>
 
     <div class="container">
-        <h2>Demo QR Card Generator</h2>
-        <p class="subtitle">Sirf testing/demo ke liye</p>
+        <h2>Demo QR Pass Generator</h2>
+        <p class="subtitle">Custom QR Card Form</p>
         
-        <div class="form-group">
-            <label>Name</label>
-            <input type="text" id="name" value="Shama Jamali Tariq Aziz">
-        </div>
-        <div class="form-group">
-            <label>Demo ID</label>
-            <input type="text" id="demo_id" value="20266977546876">
-        </div>
         <div class="form-group">
             <label>Date</label>
             <input type="text" id="date" value="17 Sep 2026">
         </div>
         <div class="form-group">
             <label>Time</label>
-            <input type="text" id="time" value="09:10 PM">
+            <input type="text" id="time" value="09:10 AM">
+        </div>
+        <div class="form-group">
+            <label>ID / Number</label>
+            <input type="text" id="demo_id" value="115582669">
+        </div>
+        <div class="form-group">
+            <label>Initial Symbol (Urdu/English)</label>
+            <input type="text" id="initial" value="ش">
+        </div>
+        <div class="form-group">
+            <label>User Label</label>
+            <input type="text" id="user_label" value="You">
+        </div>
+        <div class="form-group">
+            <label>Footer Message</label>
+            <input type="text" id="footer_msg" value="Please stay close. Your visit time is approaching.">
         </div>
 
-        <button class="action-btn" onclick="generateCard()">Generate DEMO Image</button>
+        <button class="action-btn" onclick="generateCard()">Generate Image</button>
     </div>
 
     <div id="canvasContainer">
-        <canvas id="cardCanvas" width="1100" height="700"></canvas>
+        <canvas id="cardCanvas" width="600" height="900"></canvas>
     </div>
 
     <div id="qrcode"></div>
@@ -183,26 +192,23 @@
         }
 
         function generateCard() {
-            const name = document.getElementById('name').value.trim();
-            const demoId = document.getElementById('demo_id').value.trim();
             const date = document.getElementById('date').value.trim();
             const time = document.getElementById('time').value.trim();
-
-            if (!name || !demoId || !date || !time) {
-                alert("Name, ID, date aur time sab fill karein.");
-                return;
-            }
+            const demoId = document.getElementById('demo_id').value.trim();
+            const initial = document.getElementById('initial').value.trim();
+            const userLabel = document.getElementById('user_label').value.trim();
+            const footerMsg = document.getElementById('footer_msg').value.trim();
 
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = "";
 
-            const qrText = `DEMO-ONLY\nName: ${name}\nDemo ID: ${demoId}\nDate: ${date}\nTime: ${time}\nSTATUS: TEST ONLY - NOT VALID`;
+            const qrText = `DEMO-PASS\nID: ${demoId}\nDate: ${date}\nTime: ${time}`;
 
             // Generate QR code JS
             new QRCode(qrContainer, {
                 text: qrText,
-                width: 330,
-                height: 330,
+                width: 270,
+                height: 270,
                 correctLevel : QRCode.CorrectLevel.M
             });
 
@@ -212,72 +218,84 @@
                 const ctx = canvas.getContext('2d');
 
                 // Canvas dimensions
-                const W = 1100;
-                const H = 700;
+                const W = 600;
+                const H = 900;
 
-                // Background
-                ctx.fillStyle = "#faf9f5";
+                // Background fill
+                ctx.fillStyle = "#f5f7f9";
                 ctx.fillRect(0, 0, W, H);
 
-                // Card outer border
-                ctx.strokeStyle = "#d9a62e";
-                ctx.lineWidth = 5;
+                ctx.textAlign = "center";
+
+                // Date Text
+                ctx.fillStyle = "#1e293b";
+                ctx.font = "38px Arial, sans-serif";
+                ctx.fillText(date, W / 2, 90);
+
+                // Time Text
+                ctx.fillStyle = "#334155";
+                ctx.font = "34px Arial, sans-serif";
+                ctx.fillText(time, W / 2, 145);
+
+                // QR Card Container Box (White Rounded Card)
                 ctx.fillStyle = "#ffffff";
-                
+                ctx.shadowColor = "rgba(0, 0, 0, 0.05)";
+                ctx.shadowBlur = 15;
+                ctx.shadowOffsetY = 4;
                 ctx.beginPath();
-                ctx.roundRect(20, 20, W - 40, H - 40, 28);
+                ctx.roundRect(140, 195, 320, 320, 20);
                 ctx.fill();
-                ctx.stroke();
 
-                // DEMO badge
-                ctx.fillStyle = "#fff0c7";
-                ctx.strokeStyle = "#d9a62e";
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.roundRect(55, 50, 205, 55, 15);
-                ctx.fill();
-                ctx.stroke();
+                // Reset shadow
+                ctx.shadowColor = "transparent";
 
-                ctx.fillStyle = "#1f2937";
-                ctx.font = "bold 25px Arial";
-                ctx.fillText("DEMO / TEST", 78, 88);
-
-                // Text fields
-                ctx.font = "bold 38px Arial";
-                ctx.fillText(name, 55, 180);
-
-                ctx.font = "30px Arial";
-                ctx.fillText(`Demo ID: ${demoId}`, 55, 245);
-
-                ctx.font = "28px Arial";
-                ctx.fillText(`Date: ${date}`, 55, 300);
-                ctx.fillText(`Time: ${time}`, 55, 350);
-
-                // Arch line
-                ctx.strokeStyle = "#d9a62e";
-                ctx.lineWidth = 20;
-                ctx.lineCap = "round";
-                ctx.beginPath();
-                ctx.moveTo(390, 300);
-                ctx.lineTo(390, 175);
-                ctx.lineTo(525, 90);
-                ctx.lineTo(660, 175);
-                ctx.lineTo(660, 300);
-                ctx.stroke();
-
-                // Draw QR Code
+                // Draw QR Code inside box
                 if (qrImg) {
-                    ctx.drawImage(qrImg, 720, 190, 330, 330);
+                    ctx.drawImage(qrImg, 165, 220, 270, 270);
                 }
 
-                // Disclaimer text
-                ctx.fillStyle = "#6b7280";
-                ctx.font = "bold 18px Arial";
-                ctx.fillText("TEST QR — NOT AN OFFICIAL CREDENTIAL", 700, 560);
-            }, 100);
+                // ID Number Below QR
+                ctx.fillStyle = "#1e293b";
+                ctx.font = "36px Arial, sans-serif";
+                ctx.fillText(demoId, W / 2, 580);
+
+                // Circle Avatar
+                const circleX = W / 2;
+                const circleY = 670;
+                const circleR = 45;
+
+                ctx.fillStyle = "#e2e8f0";
+                ctx.beginPath();
+                ctx.arc(circleX, circleY, circleR, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Initial Letter inside circle
+                ctx.fillStyle = "#0f172a";
+                ctx.font = "bold 38px Arial, sans-serif";
+                ctx.fillText(initial, circleX, circleY + 13);
+
+                // User Label ("You")
+                ctx.fillStyle = "#334155";
+                ctx.font = "24px Arial, sans-serif";
+                ctx.fillText(userLabel, W / 2, 755);
+
+                // Footer Message (Wrapped in 2 lines if needed)
+                ctx.fillStyle = "#64748b";
+                ctx.font = "20px Arial, sans-serif";
+
+                if (footerMsg.length > 35) {
+                    const line1 = "Please stay close. Your visit time is";
+                    const line2 = "approaching.";
+                    ctx.fillText(line1, W / 2, 820);
+                    ctx.fillText(line2, W / 2, 850);
+                } else {
+                    ctx.fillText(footerMsg, W / 2, 835);
+                }
+
+            }, 120);
         }
 
-        // Auto render initial card on page load
+        // Auto render on page load
         window.onload = generateCard;
     </script>
 
