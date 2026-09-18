@@ -168,7 +168,7 @@
     </div>
 
     <div class="container">
-        <h2>Demo QR Pass Generator</h2>
+        <h2>Demo QR Pass Generator By Jhone </h2>
         <p class="subtitle">Custom QR Card Form</p>
         
         <div class="form-group">
@@ -310,11 +310,10 @@
             const staticHash = "37e982792af9fbd5b78d064f7c87d918498bca03440d0ff5cbebe760e1d825e5";
 
             const qrPayload = `${demoId}AF${startCompact}${endCompact}${staticHash}`;
-            const qrText = `Demo Qr code\n${qrPayload}`;
 
             // Generate QR code JS
             new QRCode(qrContainer, {
-                text: qrText,
+                text: qrPayload,
                 width: 270,
                 height: 270,
                 correctLevel : QRCode.CorrectLevel.M
