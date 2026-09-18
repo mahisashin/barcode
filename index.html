@@ -147,31 +147,27 @@
 
     <div class="container">
         <h2>Demo QR Pass Generator</h2>
-        <p class="subtitle">Custom QR Card Form</p>
+        <p class="subtitle">Complete details enter karein</p>
         
         <div class="form-group">
-            <label>Date</label>
-            <input type="text" id="date" value="17 Sep 2026">
+            <label>Name:</label>
+            <input type="text" id="name" value="Shama Jamali Tariq Aziz">
         </div>
         <div class="form-group">
-            <label>Time</label>
-            <input type="text" id="time" value="09:10 AM">
-        </div>
-        <div class="form-group">
-            <label>ID / Number</label>
+            <label>ID:</label>
             <input type="text" id="demo_id" value="115582669">
         </div>
         <div class="form-group">
-            <label>Initial Symbol (Urdu/English)</label>
-            <input type="text" id="initial" value="ش">
+            <label>Date:</label>
+            <input type="text" id="date" value="17 Sep 2026">
         </div>
         <div class="form-group">
-            <label>User Label</label>
-            <input type="text" id="user_label" value="You">
+            <label>Start Time:</label>
+            <input type="text" id="start_time" value="09:10 AM">
         </div>
         <div class="form-group">
-            <label>Footer Message</label>
-            <input type="text" id="footer_msg" value="Please stay close. Your visit time is approaching.">
+            <label>End Time:</label>
+            <input type="text" id="end_time" value="10:10 AM">
         </div>
 
         <button class="action-btn" onclick="generateCard()">Generate Image</button>
@@ -192,17 +188,21 @@
         }
 
         function generateCard() {
-            const date = document.getElementById('date').value.trim();
-            const time = document.getElementById('time').value.trim();
+            const name = document.getElementById('name').value.trim();
             const demoId = document.getElementById('demo_id').value.trim();
-            const initial = document.getElementById('initial').value.trim();
-            const userLabel = document.getElementById('user_label').value.trim();
-            const footerMsg = document.getElementById('footer_msg').value.trim();
+            const date = document.getElementById('date').value.trim();
+            const startTime = document.getElementById('start_time').value.trim();
+            const endTime = document.getElementById('end_time').value.trim();
+
+            if (!name || !demoId || !date || !startTime || !endTime) {
+                alert("Tamam fields (Name, ID, Date, Start Time, End Time) fill karein.");
+                return;
+            }
 
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = "";
 
-            const qrText = `DEMO-PASS\nID: ${demoId}\nDate: ${date}\nTime: ${time}`;
+            const qrText = `DEMO-PASS\nName: ${name}\nID: ${demoId}\nDate: ${date}\nStart: ${startTime}\nEnd: ${endTime}`;
 
             // Generate QR code JS
             new QRCode(qrContainer, {
@@ -232,10 +232,11 @@
                 ctx.font = "38px Arial, sans-serif";
                 ctx.fillText(date, W / 2, 90);
 
-                // Time Text
+                // Time Range Text (e.g. 09:10 AM - 10:10 AM)
                 ctx.fillStyle = "#334155";
-                ctx.font = "34px Arial, sans-serif";
-                ctx.fillText(time, W / 2, 145);
+                ctx.font = "32px Arial, sans-serif";
+                const timeRange = `${startTime} - ${endTime}`;
+                ctx.fillText(timeRange, W / 2, 145);
 
                 // QR Card Container Box (White Rounded Card)
                 ctx.fillStyle = "#ffffff";
@@ -269,28 +270,22 @@
                 ctx.arc(circleX, circleY, circleR, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Initial Letter inside circle
+                // Initial Letter inside circle (First letter of Name or 'ش')
+                const initialChar = name.charAt(0) || "ش";
                 ctx.fillStyle = "#0f172a";
                 ctx.font = "bold 38px Arial, sans-serif";
-                ctx.fillText(initial, circleX, circleY + 13);
+                ctx.fillText(initialChar, circleX, circleY + 13);
 
                 // User Label ("You")
                 ctx.fillStyle = "#334155";
                 ctx.font = "24px Arial, sans-serif";
-                ctx.fillText(userLabel, W / 2, 755);
+                ctx.fillText("You", W / 2, 755);
 
-                // Footer Message (Wrapped in 2 lines if needed)
+                // Footer Message
                 ctx.fillStyle = "#64748b";
                 ctx.font = "20px Arial, sans-serif";
-
-                if (footerMsg.length > 35) {
-                    const line1 = "Please stay close. Your visit time is";
-                    const line2 = "approaching.";
-                    ctx.fillText(line1, W / 2, 820);
-                    ctx.fillText(line2, W / 2, 850);
-                } else {
-                    ctx.fillText(footerMsg, W / 2, 835);
-                }
+                ctx.fillText("Please stay close. Your visit time is", W / 2, 820);
+                ctx.fillText("approaching.", W / 2, 850);
 
             }, 120);
         }
