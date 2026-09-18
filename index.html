@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo QR Pass Generator</title>
+    <title>QR Pass Generator</title>
     <!-- QRCode.js library for browser -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -155,8 +155,7 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.12);
         }
 
-        /* Hidden div to generate temporary QR element */
-        #qrcode { display: none; }
+        
     </style>
 </head>
 <body>
@@ -168,7 +167,7 @@
     </div>
 
     <div class="container">
-        <h2>Demo QR Pass Generator</h2>
+        <h2> QR Pass Generator</h2>
         <p class="subtitle">Custom QR Card Form</p>
         
         <div class="form-group">
@@ -245,7 +244,7 @@
             qrContainer.innerHTML = "";
 
             const timeDisplay = endTime ? `${time} - ${endTime}` : time;
-            const qrText = `DEMO-PASS\nID: ${demoId}\nDate: ${date}\nTime: ${timeDisplay}`;
+            const qrText = `${demoId}\nDate: ${date}\nTime: ${timeDisplay}`;
 
             // Generate QR code JS
             new QRCode(qrContainer, {
