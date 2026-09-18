@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Pass Generator</title>
+    <title>QR Pass Generator JHONE</title>
     <!-- QRCode.js library for browser -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -155,7 +155,8 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.12);
         }
 
-        
+        /* Hidden div to generate temporary QR element */
+        #qrcode { display: none; }
     </style>
 </head>
 <body>
@@ -167,7 +168,7 @@
     </div>
 
     <div class="container">
-        <h2> QR Pass Generator</h2>
+        <h2>Demo QR Pass Generator</h2>
         <p class="subtitle">Custom QR Card Form</p>
         
         <div class="form-group">
@@ -176,19 +177,19 @@
         </div>
         <div class="form-group">
             <label>Start Time</label>
-            <input type="text" id="time" value="09:10 AM">
+            <input type="text" id="time" value="04:40 PM">
         </div>
         <div class="form-group">
             <label>End Time</label>
-            <input type="text" id="end_time" value="10:10 AM">
+            <input type="text" id="end_time" value="05:00 PM">
         </div>
         <div class="form-group">
             <label>ID / Number</label>
-            <input type="text" id="demo_id" value="115582669">
+            <input type="text" id="demo_id" value="1155826669">
         </div>
         <div class="form-group">
             <label>Initial Symbol (Urdu/English)</label>
-            <input type="text" id="initial" value="ش">
+            <input type="text" id="initial" value="م">
         </div>
         <div class="form-group">
             <label>User Label</label>
@@ -206,14 +207,14 @@
     </div>
 
     <div id="canvasContainer">
-        <canvas id="cardCanvas" width="600" height="900"></canvas>
+        <canvas id="cardCanvas" width="600" height="960"></canvas>
         <button class="action-btn download-btn" style="margin-top: 15px; max-width: 480px;" onclick="downloadCard()">Download Image</button>
     </div>
 
     <div id="qrcode"></div>
 
     <script>
-        // Auto set current date (Day Month Year)
+        // Auto set current date (e.g. 18 Sep 2026)
         function setAutoDate() {
             const today = new Date();
             const day = today.getDate();
@@ -231,6 +232,39 @@
             document.getElementById('themeText').textContent = isDark ? 'Light Mode' : 'Dark Mode';
         }
 
+        // Helper function to convert "14 Sep 2026" & "04:40 PM" -> "202609141640"
+        function formatDateTimeToCompact(dateStr, timeStr) {
+            try {
+                const parts = dateStr.trim().split(/\s+/);
+                if (parts.length < 3) return "";
+                const day = parts[0].padStart(2, '0');
+                const monthName = parts[1].substring(0, 3);
+                const year = parts[2];
+
+                const monthMap = {
+                    "Jan":"01", "Feb":"02", "Mar":"03", "Apr":"04", "May":"05", "Jun":"06",
+                    "Jul":"07", "Aug":"08", "Sep":"09", "Oct":"10", "Nov":"11", "Dec":"12"
+                };
+                const month = monthMap[monthName] || "01";
+
+                const timeMatch = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+                if (!timeMatch) return `${year}${month}${day}0000`;
+
+                let hours = parseInt(timeMatch[1], 10);
+                const minutes = timeMatch[2].padStart(2, '0');
+                const modifier = timeMatch[3] ? timeMatch[3].toUpperCase() : '';
+
+                if (modifier === 'PM' && hours < 12) hours += 12;
+                if (modifier === 'AM' && hours === 12) hours = 0;
+
+                const formattedHours = String(hours).padStart(2, '0');
+
+                return `${year}${month}${day}${formattedHours}${minutes}`;
+            } catch(e) {
+                return "";
+            }
+        }
+
         function generateCard() {
             const date = document.getElementById('date').value.trim();
             const time = document.getElementById('time').value.trim();
@@ -244,7 +278,14 @@
             qrContainer.innerHTML = "";
 
             const timeDisplay = endTime ? `${time} - ${endTime}` : time;
-            const qrText = `${demoId}\nDate: ${date}\nTime: ${timeDisplay}`;
+
+            // Formatting QR Text Payload as requested
+            const startCompact = formatDateTimeToCompact(date, time);
+            const endCompact = formatDateTimeToCompact(date, endTime);
+            const staticHash = "37e982792af9fbd5b78d064f7c87d918498bca03440d0ff5cbebe760e1d825e5";
+
+            const qrPayload = `${demoId}AF${startCompact}${endCompact}${staticHash}`;
+            const qrText = `Demo Qr code\n${qrPayload}`;
 
             // Generate QR code JS
             new QRCode(qrContainer, {
@@ -259,79 +300,87 @@
                 const canvas = document.getElementById('cardCanvas');
                 const ctx = canvas.getContext('2d');
 
-                // Canvas dimensions
+                // Canvas dimensions matched to original image
                 const W = 600;
-                const H = 900;
+                const H = 960;
 
-                // Background fill
-                ctx.fillStyle = "#f5f7f9";
+                // Background color
+                ctx.fillStyle = "#f1f3f5";
                 ctx.fillRect(0, 0, W, H);
 
                 ctx.textAlign = "center";
 
                 // Date Text
-                ctx.fillStyle = "#1e293b";
-                ctx.font = "38px Arial, sans-serif";
-                ctx.fillText(date, W / 2, 90);
+                ctx.fillStyle = "#2c3137";
+                ctx.font = "42px Arial, sans-serif";
+                ctx.fillText(date, W / 2, 110);
 
-                // Time Range Text (e.g., 09:10 AM - 10:10 AM)
-                ctx.fillStyle = "#334155";
-                ctx.font = "32px Arial, sans-serif";
-                ctx.fillText(timeDisplay, W / 2, 145);
+                // Time Range Text
+                ctx.fillStyle = "#4a515a";
+                ctx.font = "36px Arial, sans-serif";
+                ctx.fillText(timeDisplay, W / 2, 170);
 
-                // QR Card Container Box (White Rounded Card)
-                ctx.fillStyle = "#ffffff";
-                ctx.shadowColor = "rgba(0, 0, 0, 0.05)";
-                ctx.shadowBlur = 15;
-                ctx.shadowOffsetY = 4;
+                // Faint Dashed Line across middle
+                ctx.strokeStyle = "#dbdfe5";
+                ctx.lineWidth = 2;
+                ctx.setLineDash([8, 8]);
                 ctx.beginPath();
-                ctx.roundRect(140, 195, 320, 320, 20);
-                ctx.fill();
+                ctx.moveTo(30, 390);
+                ctx.lineTo(W - 30, 390);
+                ctx.stroke();
+                ctx.setLineDash([]); // Reset line dash
 
-                // Reset shadow
-                ctx.shadowColor = "transparent";
+                // QR Container Box
+                const boxSize = 320;
+                const boxX = (W - boxSize) / 2;
+                const boxY = 230;
+
+                ctx.fillStyle = "#e9ebee";
+                ctx.beginPath();
+                ctx.roundRect(boxX, boxY, boxSize, boxSize, 20);
+                ctx.fill();
 
                 // Draw QR Code inside box
                 if (qrImg) {
-                    ctx.drawImage(qrImg, 165, 220, 270, 270);
+                    ctx.drawImage(qrImg, boxX + 25, boxY + 25, 270, 270);
                 }
 
                 // ID Number Below QR
-                ctx.fillStyle = "#1e293b";
-                ctx.font = "36px Arial, sans-serif";
-                ctx.fillText(demoId, W / 2, 580);
+                ctx.fillStyle = "#2c3137";
+                ctx.font = "38px Arial, sans-serif";
+                ctx.fillText(demoId, W / 2, 620);
 
                 // Circle Avatar
                 const circleX = W / 2;
-                const circleY = 670;
+                const circleY = 720;
                 const circleR = 45;
 
-                ctx.fillStyle = "#e2e8f0";
+                ctx.fillStyle = "#e2e5e9";
                 ctx.beginPath();
                 ctx.arc(circleX, circleY, circleR, 0, Math.PI * 2);
                 ctx.fill();
 
                 // Initial Letter inside circle
-                ctx.fillStyle = "#0f172a";
+                ctx.fillStyle = "#374151";
                 ctx.font = "bold 38px Arial, sans-serif";
                 ctx.fillText(initial, circleX, circleY + 13);
 
                 // User Label ("You")
-                ctx.fillStyle = "#334155";
-                ctx.font = "24px Arial, sans-serif";
-                ctx.fillText(userLabel, W / 2, 755);
+                ctx.fillStyle = "#6b7280";
+                ctx.font = "22px Arial, sans-serif";
+                ctx.fillText(userLabel, W / 2, 800);
 
                 // Footer Message
-                ctx.fillStyle = "#64748b";
-                ctx.font = "20px Arial, sans-serif";
+                ctx.fillStyle = "#828a96";
+                ctx.font = "21px Arial, sans-serif";
 
                 if (footerMsg.length > 35) {
                     const line1 = "Please stay close. Your visit time is";
                     const line2 = "approaching.";
-                    ctx.fillText(line1, W / 2, 820);
-                    ctx.fillText(line2, W / 2, 850);
+                    ctx.fillText(line1, W / 2, 870);
+                    ctx.fillText(line2, W / 2, 905);
                 } else {
-                    ctx.fillText(footerMsg, W / 2, 835);
+                    ctx.fillText(footerMsg, W / 2, 885);
                 }
 
             }, 120);
