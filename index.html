@@ -179,10 +179,7 @@
             <label>Start Time</label>
             <input type="text" id="time" value="04:40 PM">
         </div>
-        <div class="form-group">
-            <label>End Time</label>
-            <input type="text" id="end_time" value="05:00 PM">
-        </div>
+        
         <div class="form-group">
             <label>ID / Number</label>
             <input type="text" id="demo_id" value="1155826669">
@@ -268,7 +265,6 @@
         function generateCard() {
             const date = document.getElementById('date').value.trim();
             const time = document.getElementById('time').value.trim();
-            const endTime = document.getElementById('end_time').value.trim();
             const demoId = document.getElementById('demo_id').value.trim();
             const initial = document.getElementById('initial').value.trim();
             const userLabel = document.getElementById('user_label').value.trim();
@@ -277,7 +273,7 @@
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = "";
 
-            const timeDisplay = endTime ? `${time} - ${endTime}` : time;
+            const timeDisplay = time;
 
             // Formatting QR Text Payload as requested
             const startCompact = formatDateTimeToCompact(date, time);
