@@ -168,7 +168,7 @@
     </div>
 
     <div class="container">
-        <h2>Demo QR Pass Designed By Jhone</h2>
+        <h2>Demo QR Pass By Jhone</h2>
         <p class="subtitle">Custom QR Card Form</p>
         
         <div class="form-group">
@@ -288,6 +288,7 @@
 
             // Generate QR code JS
             new QRCode(qrContainer, {
+                text: qrPayload,
                 width: 270,
                 height: 270,
                 correctLevel : QRCode.CorrectLevel.M
