@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Pass Generator JHONE</title>
+    <title>QR Pass Designed by JHONE </title>
     <!-- QRCode.js library for browser -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -285,7 +285,6 @@
             const staticHash = "37e982792af9fbd5b78d064f7c87d918498bca03440d0ff5cbebe760e1d825e5";
 
             const qrPayload = `${demoId}AF${startCompact}${endCompact}${staticHash}`;
-            const qrText = `Demo Qr code\n${qrPayload}`;
 
             // Generate QR code JS
             new QRCode(qrContainer, {
