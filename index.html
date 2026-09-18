@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Pass Designed by JHONE</title>
+    <title>Demo QR Pass Generator</title>
     <!-- QRCode.js library for browser -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -123,3 +123,285 @@
             border: none;
             border-radius: 6px;
             font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        .action-btn:hover { background-color: var(--btn-hover); }
+
+        .download-btn {
+            background-color: var(--success-btn);
+        }
+
+        .download-btn:hover {
+            background-color: var(--success-hover);
+        }
+
+        #canvasContainer {
+            max-width: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        /* Hidden div to generate temporary QR element */
+        #qrcode { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <button class="theme-toggle-btn" onclick="toggleDarkMode()">
+            <span id="themeIcon">🌙</span> <span id="themeText">Dark Mode</span>
+        </button>
+    </div>
+
+    <div class="container">
+        <h2>Demo QR Pass Designed By Jhone</h2>
+        <p class="subtitle">Custom QR Card Form</p>
+        
+        <div class="form-group">
+            <label>Date (Auto Current Date)</label>
+            <input type="text" id="date">
+        </div>
+        <div class="form-group">
+            <label>Start Time</label>
+            <input type="text" id="time" value="04:40 PM">
+        </div>
+        <div class="form-group">
+            <label>End Time</label>
+            <input type="text" id="end_time" value="05:00 PM">
+        </div>
+        <div class="form-group">
+            <label>ID / Number</label>
+            <input type="text" id="demo_id" value="1155826669">
+        </div>
+        <div class="form-group">
+            <label>Initial Symbol (Urdu/English)</label>
+            <input type="text" id="initial" value="م">
+        </div>
+        <div class="form-group">
+            <label>User Label</label>
+            <input type="text" id="user_label" value="You">
+        </div>
+        <div class="form-group">
+            <label>Footer Message</label>
+            <input type="text" id="footer_msg" value="Please stay close. Your visit time is approaching.">
+        </div>
+
+        <div class="btn-group">
+            <button class="action-btn" onclick="generateCard()">Generate Image</button>
+            <button class="action-btn download-btn" onclick="downloadCard()">Download Image</button>
+        </div>
+    </div>
+
+    <div id="canvasContainer">
+        <canvas id="cardCanvas" width="600" height="960"></canvas>
+        <button class="action-btn download-btn" style="margin-top: 15px; max-width: 480px;" onclick="downloadCard()">Download Image</button>
+    </div>
+
+    <div id="qrcode"></div>
+
+    <script>
+        // Auto set current date (e.g. 18 Sep 2026)
+        function setAutoDate() {
+            const today = new Date();
+            const day = today.getDate();
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const month = monthNames[today.getMonth()];
+            const year = today.getFullYear();
+            
+            document.getElementById('date').value = `${day} ${month} ${year}`;
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
+            document.getElementById('themeText').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+        }
+
+        // Helper function to convert "14 Sep 2026" & "04:40 PM" -> "202609141640"
+        function formatDateTimeToCompact(dateStr, timeStr) {
+            try {
+                const parts = dateStr.trim().split(/\s+/);
+                if (parts.length < 3) return "";
+                const day = parts[0].padStart(2, '0');
+                const monthName = parts[1].substring(0, 3);
+                const year = parts[2];
+
+                const monthMap = {
+                    "Jan":"01", "Feb":"02", "Mar":"03", "Apr":"04", "May":"05", "Jun":"06",
+                    "Jul":"07", "Aug":"08", "Sep":"09", "Oct":"10", "Nov":"11", "Dec":"12"
+                };
+                const month = monthMap[monthName] || "01";
+
+                const timeMatch = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+                if (!timeMatch) return `${year}${month}${day}0000`;
+
+                let hours = parseInt(timeMatch[1], 10);
+                const minutes = timeMatch[2].padStart(2, '0');
+                const modifier = timeMatch[3] ? timeMatch[3].toUpperCase() : '';
+
+                if (modifier === 'PM' && hours < 12) hours += 12;
+                if (modifier === 'AM' && hours === 12) hours = 0;
+
+                const formattedHours = String(hours).padStart(2, '0');
+
+                return `${year}${month}${day}${formattedHours}${minutes}`;
+            } catch(e) {
+                return "";
+            }
+        }
+
+        function generateCard() {
+            const date = document.getElementById('date').value.trim();
+            const time = document.getElementById('time').value.trim();
+            const endTime = document.getElementById('end_time').value.trim();
+            const demoId = document.getElementById('demo_id').value.trim();
+            const initial = document.getElementById('initial').value.trim();
+            const userLabel = document.getElementById('user_label').value.trim();
+            const footerMsg = document.getElementById('footer_msg').value.trim();
+
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = "";
+
+            const timeDisplay = endTime ? `${time} - ${endTime}` : time;
+
+            // Formatting QR Text Payload as requested
+            const startCompact = formatDateTimeToCompact(date, time);
+            const endCompact = formatDateTimeToCompact(date, endTime);
+            const staticHash = "37e982792af9fbd5b78d064f7c87d918498bca03440d0ff5cbebe760e1d825e5";
+
+            const qrPayload = `${demoId}AF${startCompact}${endCompact}${staticHash}`;
+
+            // Generate QR code JS
+            new QRCode(qrContainer, {
+                text: qrText,
+                width: 270,
+                height: 270,
+                correctLevel : QRCode.CorrectLevel.M
+            });
+
+            setTimeout(() => {
+                const qrImg = qrContainer.querySelector('img');
+                const canvas = document.getElementById('cardCanvas');
+                const ctx = canvas.getContext('2d');
+
+                // Canvas dimensions matched to original image
+                const W = 600;
+                const H = 960;
+
+                // Background color
+                ctx.fillStyle = "#f1f3f5";
+                ctx.fillRect(0, 0, W, H);
+
+                ctx.textAlign = "center";
+
+                // Date Text
+                ctx.fillStyle = "#2c3137";
+                ctx.font = "42px Arial, sans-serif";
+                ctx.fillText(date, W / 2, 110);
+
+                // Time Range Text
+                ctx.fillStyle = "#4a515a";
+                ctx.font = "36px Arial, sans-serif";
+                ctx.fillText(timeDisplay, W / 2, 170);
+
+                // Faint Dashed Line across middle
+                ctx.strokeStyle = "#dbdfe5";
+                ctx.lineWidth = 2;
+                ctx.setLineDash([8, 8]);
+                ctx.beginPath();
+                ctx.moveTo(30, 390);
+                ctx.lineTo(W - 30, 390);
+                ctx.stroke();
+                ctx.setLineDash([]); // Reset line dash
+
+                // QR Container Box
+                const boxSize = 320;
+                const boxX = (W - boxSize) / 2;
+                const boxY = 230;
+
+                ctx.fillStyle = "#e9ebee";
+                ctx.beginPath();
+                ctx.roundRect(boxX, boxY, boxSize, boxSize, 20);
+                ctx.fill();
+
+                // Draw QR Code inside box
+                if (qrImg) {
+                    ctx.drawImage(qrImg, boxX + 25, boxY + 25, 270, 270);
+                }
+
+                // ID Number Below QR
+                ctx.fillStyle = "#2c3137";
+                ctx.font = "38px Arial, sans-serif";
+                ctx.fillText(demoId, W / 2, 620);
+
+                // Circle Avatar
+                const circleX = W / 2;
+                const circleY = 720;
+                const circleR = 45;
+
+                ctx.fillStyle = "#e2e5e9";
+                ctx.beginPath();
+                ctx.arc(circleX, circleY, circleR, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Initial Letter inside circle
+                ctx.fillStyle = "#374151";
+                ctx.font = "bold 38px Arial, sans-serif";
+                ctx.fillText(initial, circleX, circleY + 13);
+
+                // User Label ("You")
+                ctx.fillStyle = "#6b7280";
+                ctx.font = "22px Arial, sans-serif";
+                ctx.fillText(userLabel, W / 2, 800);
+
+                // Footer Message
+                ctx.fillStyle = "#828a96";
+                ctx.font = "21px Arial, sans-serif";
+
+                if (footerMsg.length > 35) {
+                    const line1 = "Please stay close. Your visit time is";
+                    const line2 = "approaching.";
+                    ctx.fillText(line1, W / 2, 870);
+                    ctx.fillText(line2, W / 2, 905);
+                } else {
+                    ctx.fillText(footerMsg, W / 2, 885);
+                }
+
+            }, 120);
+        }
+
+        // Image download function
+        function downloadCard() {
+            const canvas = document.getElementById('cardCanvas');
+            const link = document.createElement('a');
+            link.download = 'QR_Pass.png';
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Auto render on page load
+        window.onload = function() {
+            setAutoDate();
+            generateCard();
+        };
+    </script>
+
+</body>
+</html>
