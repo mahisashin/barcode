@@ -168,7 +168,7 @@
     </div>
 
     <div class="container">
-        <h2>Demo QR Pass By Jhone</h2>
+        <h2>Demo QR Pass Generator</h2>
         <p class="subtitle">Custom QR Card Form</p>
         
         <div class="form-group">
@@ -176,10 +176,9 @@
             <input type="text" id="date">
         </div>
         <div class="form-group">
-            <label>Start Time</label>
+            <label>Time</label>
             <input type="text" id="time" value="04:40 PM">
         </div>
-        
         <div class="form-group">
             <label>ID / Number</label>
             <input type="text" id="demo_id" value="1155826669">
@@ -211,7 +210,7 @@
     <div id="qrcode"></div>
 
     <script>
-        // Auto set current date (e.g. 18 Sep 2026)
+        // Auto set current date
         function setAutoDate() {
             const today = new Date();
             const day = today.getDate();
@@ -227,6 +226,37 @@
             const isDark = document.body.classList.contains('dark-mode');
             document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
             document.getElementById('themeText').textContent = isDark ? 'Light Mode' : 'Dark Mode';
+        }
+
+        // Auto calculate end time (+20 mins) for QR payload
+        function getEndTimeStr(timeStr, addMinutes = 20) {
+            try {
+                const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+                if (!match) return timeStr;
+                let hours = parseInt(match[1], 10);
+                let minutes = parseInt(match[2], 10);
+                let modifier = match[3] ? match[3].toUpperCase() : 'AM';
+
+                if (modifier === 'PM' && hours < 12) hours += 12;
+                if (modifier === 'AM' && hours === 12) hours = 0;
+
+                let dateObj = new Date();
+                dateObj.setHours(hours, minutes + addMinutes, 0, 0);
+
+                let endHours = dateObj.getHours();
+                let endMinutes = dateObj.getMinutes();
+                let endModifier = endHours >= 12 ? 'PM' : 'AM';
+
+                endHours = endHours % 12;
+                endHours = endHours ? endHours : 12;
+                
+                const strHours = String(endHours).padStart(2, '0');
+                const strMins = String(endMinutes).padStart(2, '0');
+
+                return `${strHours}:${strMins} ${endModifier}`;
+            } catch(e) {
+                return timeStr;
+            }
         }
 
         // Helper function to convert "14 Sep 2026" & "04:40 PM" -> "202609141640"
@@ -265,6 +295,7 @@
         function generateCard() {
             const date = document.getElementById('date').value.trim();
             const time = document.getElementById('time').value.trim();
+            const endTime = getEndTimeStr(time, 20); // Automatically calculate end time for payload (+20 mins)
             const demoId = document.getElementById('demo_id').value.trim();
             const initial = document.getElementById('initial').value.trim();
             const userLabel = document.getElementById('user_label').value.trim();
@@ -273,18 +304,17 @@
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = "";
 
-            const timeDisplay = time;
-
-            // Formatting QR Text Payload as requested
+            // Formatting QR Text Payload
             const startCompact = formatDateTimeToCompact(date, time);
             const endCompact = formatDateTimeToCompact(date, endTime);
             const staticHash = "37e982792af9fbd5b78d064f7c87d918498bca03440d0ff5cbebe760e1d825e5";
 
             const qrPayload = `${demoId}AF${startCompact}${endCompact}${staticHash}`;
+            const qrText = `Demo Qr code\n${qrPayload}`;
 
             // Generate QR code JS
             new QRCode(qrContainer, {
-                text: qrPayload,
+                text: qrText,
                 width: 270,
                 height: 270,
                 correctLevel : QRCode.CorrectLevel.M
@@ -295,11 +325,11 @@
                 const canvas = document.getElementById('cardCanvas');
                 const ctx = canvas.getContext('2d');
 
-                // Canvas dimensions matched to original image
+                // Canvas dimensions
                 const W = 600;
                 const H = 960;
 
-                // Background color
+                // Background color (solid background for JPG)
                 ctx.fillStyle = "#f1f3f5";
                 ctx.fillRect(0, 0, W, H);
 
@@ -310,10 +340,10 @@
                 ctx.font = "42px Arial, sans-serif";
                 ctx.fillText(date, W / 2, 110);
 
-                // Time Range Text
+                // Start Time Text (Only starting time displayed on card)
                 ctx.fillStyle = "#4a515a";
                 ctx.font = "36px Arial, sans-serif";
-                ctx.fillText(timeDisplay, W / 2, 170);
+                ctx.fillText(time, W / 2, 170);
 
                 // Faint Dashed Line across middle
                 ctx.strokeStyle = "#dbdfe5";
@@ -381,12 +411,15 @@
             }, 120);
         }
 
-        // Image download function
+        // Image download function (JPG format with ID name)
         function downloadCard() {
             const canvas = document.getElementById('cardCanvas');
+            const demoId = document.getElementById('demo_id').value.trim();
+            const fileName = demoId ? `${demoId}.jpg` : 'QR_Pass.jpg';
+            
             const link = document.createElement('a');
-            link.download = 'QR_Pass.png';
-            link.href = canvas.toDataURL('image/png');
+            link.download = fileName;
+            link.href = canvas.toDataURL('image/jpeg', 0.95);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
