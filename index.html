@@ -93,15 +93,40 @@
 <body>
 
     <div class="container">
-        <h2>Nusuk ID to Permit Card</h2>
+        <h2>Nusuk Permit Pass Generator</h2>
         
         <div class="form-group">
-            <label>Enter Nusuk ID / Input ID</label>
-            <input type="text" id="nusuk_input" value="20267477084186" placeholder="Enter 14 digit Nusuk ID">
+            <label>Nusuk ID (Auto-Fill Lookup)</label>
+            <input type="text" id="nusuk_id" value="20267477084186" oninput="autoFillFromNusuk()" placeholder="e.g. 20267477084186">
+        </div>
+
+        <div class="form-group">
+            <label>Permit ID / Booking ID</label>
+            <input type="text" id="permit_id" value="5813241226">
+        </div>
+
+        <div class="form-group">
+            <label>Visit Date</label>
+            <input type="text" id="visit_date" value="18 Sep 2026">
+        </div>
+
+        <div class="form-group">
+            <label>Visit Time</label>
+            <input type="text" id="visit_time" value="04:40 PM">
+        </div>
+
+        <div class="form-group">
+            <label>Initial Symbol (e.g. م / b)</label>
+            <input type="text" id="user_initial" value="م">
+        </div>
+
+        <div class="form-group">
+            <label>User Label</label>
+            <input type="text" id="user_label" value="You">
         </div>
 
         <div class="btn-group">
-            <button class="action-btn" onclick="processNusukInput()">Generate Permit Card</button>
+            <button class="action-btn" onclick="generateCard()">Generate Permit Card</button>
             <button class="action-btn download-btn" onclick="downloadCard()">Download JPG</button>
         </div>
     </div>
@@ -113,7 +138,7 @@
     <div id="qrcode"></div>
 
     <script>
-        // Local Database Mapping Table (Nusuk ID -> Permit Details)
+        // Local Database Mapping Table
         const nusukDatabase = {
             "20267477084186": {
                 permitId: "5813241226",
@@ -131,34 +156,30 @@
             }
         };
 
-        function processNusukInput() {
-            const inputId = document.getElementById('nusuk_input').value.trim();
-            
-            let permitData;
-
-            // Database lookup
-            if (nusukDatabase[inputId]) {
-                permitData = nusukDatabase[inputId];
-            } else {
-                // Agar ID database me na mile toh fallback default permit
-                permitData = {
-                    permitId: inputId.length > 10 ? inputId.substring(4, 14) : inputId,
-                    date: "18 Sep 2026",
-                    time: "04:40 PM",
-                    initial: "م",
-                    label: "You"
-                };
+        function autoFillFromNusuk() {
+            const nusukId = document.getElementById('nusuk_id').value.trim();
+            if (nusukDatabase[nusukId]) {
+                const data = nusukDatabase[nusukId];
+                document.getElementById('permit_id').value = data.permitId;
+                document.getElementById('visit_date').value = data.date;
+                document.getElementById('visit_time').value = data.time;
+                document.getElementById('user_initial').value = data.initial;
+                document.getElementById('user_label').value = data.label;
             }
-
-            renderCanvasCard(permitData);
         }
 
-        function renderCanvasCard(data) {
+        function generateCard() {
+            const permitId = document.getElementById('permit_id').value.trim();
+            const visitDate = document.getElementById('visit_date').value.trim();
+            const visitTime = document.getElementById('visit_time').value.trim();
+            const userInitial = document.getElementById('user_initial').value.trim();
+            const userLabel = document.getElementById('user_label').value.trim();
+
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = "";
 
-            // QR Text Generator
-            const qrText = `Demo Qr code\n${data.permitId}AF20260918164020260918170037e982792af9fbd5b78d064f7c87d918498bca03440d0ff5cbebe760e1d825e5`;
+            // QR Code Payload
+            const qrText = `Demo Qr code\n${permitId}AF20260918164020260918170037e982792af9fbd5b78d064f7c87d918498bca03440d0ff5cbebe760e1d825e5`;
 
             new QRCode(qrContainer, {
                 text: qrText,
@@ -184,12 +205,12 @@
                 // Date
                 ctx.fillStyle = "#2c3137";
                 ctx.font = "42px Arial, sans-serif";
-                ctx.fillText(data.date, W / 2, 110);
+                ctx.fillText(visitDate, W / 2, 110);
 
                 // Time
                 ctx.fillStyle = "#4a515a";
                 ctx.font = "36px Arial, sans-serif";
-                ctx.fillText(data.time, W / 2, 170);
+                ctx.fillText(visitTime, W / 2, 170);
 
                 // Dashed Line
                 ctx.strokeStyle = "#dbdfe5";
@@ -201,7 +222,7 @@
                 ctx.stroke();
                 ctx.setLineDash([]);
 
-                // QR Box
+                // QR Box Background
                 const boxSize = 320;
                 const boxX = (W - boxSize) / 2;
                 const boxY = 230;
@@ -219,7 +240,7 @@
                 // Permit ID Number
                 ctx.fillStyle = "#2c3137";
                 ctx.font = "38px Arial, sans-serif";
-                ctx.fillText(data.permitId, W / 2, 620);
+                ctx.fillText(permitId, W / 2, 620);
 
                 // Initial Circle
                 const circleX = W / 2;
@@ -232,12 +253,12 @@
                 // Initial Letter
                 ctx.fillStyle = "#374151";
                 ctx.font = "bold 38px Arial, sans-serif";
-                ctx.fillText(data.initial, circleX, circleY + 13);
+                ctx.fillText(userInitial, circleX, circleY + 13);
 
                 // Label ("You")
                 ctx.fillStyle = "#6b7280";
                 ctx.font = "22px Arial, sans-serif";
-                ctx.fillText(data.label, W / 2, 800);
+                ctx.fillText(userLabel, W / 2, 800);
 
                 // Footer Text
                 ctx.fillStyle = "#828a96";
@@ -250,8 +271,8 @@
 
         function downloadCard() {
             const canvas = document.getElementById('cardCanvas');
-            const inputId = document.getElementById('nusuk_input').value.trim();
-            const fileName = inputId ? `${inputId}.jpg` : 'Permit_Card.jpg';
+            const permitId = document.getElementById('permit_id').value.trim();
+            const fileName = permitId ? `${permitId}.jpg` : 'Permit_Card.jpg';
             
             const link = document.createElement('a');
             link.download = fileName;
@@ -262,7 +283,8 @@
         }
 
         window.onload = function() {
-            processNusukInput();
+            autoFillFromNusuk();
+            generateCard();
         };
     </script>
 
