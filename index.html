@@ -3,36 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo QR Pass Generator</title>
-    <!-- QRCode.js library for browser -->
+    <title>Nusuk to Permit Generator</title>
+    <!-- QRCode.js Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
             --bg-color: #f3f4f6;
             --card-bg: #ffffff;
             --text-color: #1f2937;
-            --label-color: #374151;
-            --input-bg: #ffffff;
-            --input-border: #d1d5db;
-            --input-text: #1f2937;
             --btn-bg: #1e293b;
             --btn-hover: #0f172a;
             --success-btn: #16a34a;
-            --success-hover: #15803d;
-        }
-
-        body.dark-mode {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-color: #f3f4f6;
-            --label-color: #d1d5db;
-            --input-bg: #2d2d2d;
-            --input-border: #4b5563;
-            --input-text: #ffffff;
-            --btn-bg: #38bdf8;
-            --btn-hover: #0284c7;
-            --success-btn: #22c55e;
-            --success-hover: #16a34a;
         }
 
         body {
@@ -44,34 +25,6 @@
             align-items: center;
             padding: 20px;
             margin: 0;
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        .header-bar {
-            width: 100%;
-            max-width: 480px;
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: -10px;
-            margin-top: 10px;
-        }
-
-        .theme-toggle-btn {
-            padding: 8px 16px;
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            border: 2px solid var(--btn-bg);
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .theme-toggle-btn:hover {
-            transform: scale(1.05);
         }
 
         .container {
@@ -79,16 +32,13 @@
             padding: 25px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            max-width: 480px;
+            max-width: 450px;
             width: 100%;
-            margin-top: 15px;
             margin-bottom: 25px;
-            transition: background 0.3s;
             box-sizing: border-box;
         }
 
-        h2 { text-align: center; margin-top: 0; color: var(--text-color); }
-        p.subtitle { text-align: center; color: #9ca3af; font-size: 14px; margin-bottom: 20px; }
+        h2 { text-align: center; margin-top: 0; font-size: 20px; }
         
         .form-group {
             margin-bottom: 12px;
@@ -96,16 +46,13 @@
             flex-direction: column;
         }
 
-        label { font-size: 14px; font-weight: bold; margin-bottom: 5px; color: var(--label-color); }
+        label { font-size: 14px; font-weight: bold; margin-bottom: 5px; }
         
         input {
             padding: 10px;
-            background-color: var(--input-bg);
-            color: var(--input-text);
-            border: 1px solid var(--input-border);
+            border: 1px solid #d1d5db;
             border-radius: 6px;
-            font-size: 14px;
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+            font-size: 15px;
         }
 
         .btn-group {
@@ -116,7 +63,6 @@
         }
 
         .action-btn {
-            width: 100%;
             padding: 12px;
             background-color: var(--btn-bg);
             color: white;
@@ -125,195 +71,97 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.3s;
-            box-sizing: border-box;
         }
 
-        .action-btn:hover { background-color: var(--btn-hover); }
-
-        .download-btn {
-            background-color: var(--success-btn);
-        }
-
-        .download-btn:hover {
-            background-color: var(--success-hover);
-        }
+        .download-btn { background-color: var(--success-btn); }
 
         #canvasContainer {
-            max-width: 100%;
-            width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 30px;
         }
 
         canvas {
             max-width: 100%;
-            height: auto;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.12);
         }
 
-        /* Hidden div to generate temporary QR element */
         #qrcode { display: none; }
     </style>
 </head>
 <body>
 
-    <div class="header-bar">
-        <button class="theme-toggle-btn" onclick="toggleDarkMode()">
-            <span id="themeIcon">🌙</span> <span id="themeText">Dark Mode</span>
-        </button>
-    </div>
-
     <div class="container">
-        <h2>Demo QR Pass Generator By Jhone </h2>
-        <p class="subtitle">Custom QR Card Form</p>
+        <h2>Nusuk ID to Permit Card</h2>
         
         <div class="form-group">
-            <label>Date (Auto Current Date)</label>
-            <input type="text" id="date">
-        </div>
-        <div class="form-group">
-            <label>Time</label>
-            <input type="text" id="time" value="04:40 PM">
-        </div>
-        <div class="form-group">
-            <label>ID / Number</label>
-            <input type="text" id="demo_id" value="1155826669">
-        </div>
-        <div class="form-group">
-            <label>Initial Symbol (Urdu/English)</label>
-            <input type="text" id="initial" value="م">
-        </div>
-        <div class="form-group">
-            <label>User Label</label>
-            <input type="text" id="user_label" value="You">
-        </div>
-        <div class="form-group">
-            <label>Footer Message</label>
-            <input type="text" id="footer_msg" value="Please stay close. Your visit time is approaching.">
+            <label>Enter Nusuk ID / Input ID</label>
+            <input type="text" id="nusuk_input" value="20267477084186" placeholder="Enter 14 digit Nusuk ID">
         </div>
 
         <div class="btn-group">
-            <button class="action-btn" onclick="generateCard()">Generate Image</button>
-            <button class="action-btn download-btn" onclick="downloadCard()">Download Image</button>
+            <button class="action-btn" onclick="processNusukInput()">Generate Permit Card</button>
+            <button class="action-btn download-btn" onclick="downloadCard()">Download JPG</button>
         </div>
     </div>
 
     <div id="canvasContainer">
         <canvas id="cardCanvas" width="600" height="960"></canvas>
-        <button class="action-btn download-btn" style="margin-top: 15px; max-width: 480px;" onclick="downloadCard()">Download Image</button>
     </div>
 
     <div id="qrcode"></div>
 
     <script>
-        // Auto set current date
-        function setAutoDate() {
-            const today = new Date();
-            const day = today.getDate();
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const month = monthNames[today.getMonth()];
-            const year = today.getFullYear();
+        // Local Database Mapping Table (Nusuk ID -> Permit Details)
+        const nusukDatabase = {
+            "20267477084186": {
+                permitId: "5813241226",
+                date: "18 Sep 2026",
+                time: "04:40 PM",
+                initial: "م",
+                label: "You"
+            },
+            "20267946047340": {
+                permitId: "1155913541",
+                date: "22 Sep 2026",
+                time: "02:40 PM",
+                initial: "b",
+                label: "You"
+            }
+        };
+
+        function processNusukInput() {
+            const inputId = document.getElementById('nusuk_input').value.trim();
             
-            document.getElementById('date').value = `${day} ${month} ${year}`;
-        }
+            let permitData;
 
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark-mode');
-            const isDark = document.body.classList.contains('dark-mode');
-            document.getElementById('themeIcon').textContent = isDark ? '☀️' : '🌙';
-            document.getElementById('themeText').textContent = isDark ? 'Light Mode' : 'Dark Mode';
-        }
-
-        // Auto calculate end time (+20 mins) for QR payload
-        function getEndTimeStr(timeStr, addMinutes = 20) {
-            try {
-                const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
-                if (!match) return timeStr;
-                let hours = parseInt(match[1], 10);
-                let minutes = parseInt(match[2], 10);
-                let modifier = match[3] ? match[3].toUpperCase() : 'AM';
-
-                if (modifier === 'PM' && hours < 12) hours += 12;
-                if (modifier === 'AM' && hours === 12) hours = 0;
-
-                let dateObj = new Date();
-                dateObj.setHours(hours, minutes + addMinutes, 0, 0);
-
-                let endHours = dateObj.getHours();
-                let endMinutes = dateObj.getMinutes();
-                let endModifier = endHours >= 12 ? 'PM' : 'AM';
-
-                endHours = endHours % 12;
-                endHours = endHours ? endHours : 12;
-                
-                const strHours = String(endHours).padStart(2, '0');
-                const strMins = String(endMinutes).padStart(2, '0');
-
-                return `${strHours}:${strMins} ${endModifier}`;
-            } catch(e) {
-                return timeStr;
-            }
-        }
-
-        // Helper function to convert "14 Sep 2026" & "04:40 PM" -> "202609141640"
-        function formatDateTimeToCompact(dateStr, timeStr) {
-            try {
-                const parts = dateStr.trim().split(/\s+/);
-                if (parts.length < 3) return "";
-                const day = parts[0].padStart(2, '0');
-                const monthName = parts[1].substring(0, 3);
-                const year = parts[2];
-
-                const monthMap = {
-                    "Jan":"01", "Feb":"02", "Mar":"03", "Apr":"04", "May":"05", "Jun":"06",
-                    "Jul":"07", "Aug":"08", "Sep":"09", "Oct":"10", "Nov":"11", "Dec":"12"
+            // Database lookup
+            if (nusukDatabase[inputId]) {
+                permitData = nusukDatabase[inputId];
+            } else {
+                // Agar ID database me na mile toh fallback default permit
+                permitData = {
+                    permitId: inputId.length > 10 ? inputId.substring(4, 14) : inputId,
+                    date: "18 Sep 2026",
+                    time: "04:40 PM",
+                    initial: "م",
+                    label: "You"
                 };
-                const month = monthMap[monthName] || "01";
-
-                const timeMatch = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
-                if (!timeMatch) return `${year}${month}${day}0000`;
-
-                let hours = parseInt(timeMatch[1], 10);
-                const minutes = timeMatch[2].padStart(2, '0');
-                const modifier = timeMatch[3] ? timeMatch[3].toUpperCase() : '';
-
-                if (modifier === 'PM' && hours < 12) hours += 12;
-                if (modifier === 'AM' && hours === 12) hours = 0;
-
-                const formattedHours = String(hours).padStart(2, '0');
-
-                return `${year}${month}${day}${formattedHours}${minutes}`;
-            } catch(e) {
-                return "";
             }
+
+            renderCanvasCard(permitData);
         }
 
-        function generateCard() {
-            const date = document.getElementById('date').value.trim();
-            const time = document.getElementById('time').value.trim();
-            const endTime = getEndTimeStr(time, 20); // Automatically calculate end time for payload (+20 mins)
-            const demoId = document.getElementById('demo_id').value.trim();
-            const initial = document.getElementById('initial').value.trim();
-            const userLabel = document.getElementById('user_label').value.trim();
-            const footerMsg = document.getElementById('footer_msg').value.trim();
-
+        function renderCanvasCard(data) {
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = "";
 
-            // Formatting QR Text Payload
-            const startCompact = formatDateTimeToCompact(date, time);
-            const endCompact = formatDateTimeToCompact(date, endTime);
-            const staticHash = "37e982792af9fbd5b78d064f7c87d918498bca03440d0ff5cbebe760e1d825e5";
+            // QR Text Generator
+            const qrText = `Demo Qr code\n${data.permitId}AF20260918164020260918170037e982792af9fbd5b78d064f7c87d918498bca03440d0ff5cbebe760e1d825e5`;
 
-            const qrPayload = `${demoId}AF${startCompact}${endCompact}${staticHash}`;
-
-            // Generate QR code JS
             new QRCode(qrContainer, {
-                text: qrPayload,
+                text: qrText,
                 width: 270,
                 height: 270,
                 correctLevel : QRCode.CorrectLevel.M
@@ -324,27 +172,26 @@
                 const canvas = document.getElementById('cardCanvas');
                 const ctx = canvas.getContext('2d');
 
-                // Canvas dimensions
                 const W = 600;
                 const H = 960;
 
-                // Background color (solid background for JPG)
+                // Background
                 ctx.fillStyle = "#f1f3f5";
                 ctx.fillRect(0, 0, W, H);
 
                 ctx.textAlign = "center";
 
-                // Date Text
+                // Date
                 ctx.fillStyle = "#2c3137";
                 ctx.font = "42px Arial, sans-serif";
-                ctx.fillText(date, W / 2, 110);
+                ctx.fillText(data.date, W / 2, 110);
 
-                // Start Time Text (Only starting time displayed on card)
+                // Time
                 ctx.fillStyle = "#4a515a";
                 ctx.font = "36px Arial, sans-serif";
-                ctx.fillText(time, W / 2, 170);
+                ctx.fillText(data.time, W / 2, 170);
 
-                // Faint Dashed Line across middle
+                // Dashed Line
                 ctx.strokeStyle = "#dbdfe5";
                 ctx.lineWidth = 2;
                 ctx.setLineDash([8, 8]);
@@ -352,9 +199,9 @@
                 ctx.moveTo(30, 390);
                 ctx.lineTo(W - 30, 390);
                 ctx.stroke();
-                ctx.setLineDash([]); // Reset line dash
+                ctx.setLineDash([]);
 
-                // QR Container Box
+                // QR Box
                 const boxSize = 320;
                 const boxX = (W - boxSize) / 2;
                 const boxY = 230;
@@ -364,57 +211,47 @@
                 ctx.roundRect(boxX, boxY, boxSize, boxSize, 20);
                 ctx.fill();
 
-                // Draw QR Code inside box
+                // Draw QR Code
                 if (qrImg) {
                     ctx.drawImage(qrImg, boxX + 25, boxY + 25, 270, 270);
                 }
 
-                // ID Number Below QR
+                // Permit ID Number
                 ctx.fillStyle = "#2c3137";
                 ctx.font = "38px Arial, sans-serif";
-                ctx.fillText(demoId, W / 2, 620);
+                ctx.fillText(data.permitId, W / 2, 620);
 
-                // Circle Avatar
+                // Initial Circle
                 const circleX = W / 2;
                 const circleY = 720;
-                const circleR = 45;
-
                 ctx.fillStyle = "#e2e5e9";
                 ctx.beginPath();
-                ctx.arc(circleX, circleY, circleR, 0, Math.PI * 2);
+                ctx.arc(circleX, circleY, 45, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Initial Letter inside circle
+                // Initial Letter
                 ctx.fillStyle = "#374151";
                 ctx.font = "bold 38px Arial, sans-serif";
-                ctx.fillText(initial, circleX, circleY + 13);
+                ctx.fillText(data.initial, circleX, circleY + 13);
 
-                // User Label ("You")
+                // Label ("You")
                 ctx.fillStyle = "#6b7280";
                 ctx.font = "22px Arial, sans-serif";
-                ctx.fillText(userLabel, W / 2, 800);
+                ctx.fillText(data.label, W / 2, 800);
 
-                // Footer Message
+                // Footer Text
                 ctx.fillStyle = "#828a96";
                 ctx.font = "21px Arial, sans-serif";
-
-                if (footerMsg.length > 35) {
-                    const line1 = "Please stay close. Your visit time is";
-                    const line2 = "approaching.";
-                    ctx.fillText(line1, W / 2, 870);
-                    ctx.fillText(line2, W / 2, 905);
-                } else {
-                    ctx.fillText(footerMsg, W / 2, 885);
-                }
+                ctx.fillText("Please stay close. Your visit time is", W / 2, 870);
+                ctx.fillText("approaching.", W / 2, 905);
 
             }, 120);
         }
 
-        // Image download function (JPG format with ID name)
         function downloadCard() {
             const canvas = document.getElementById('cardCanvas');
-            const demoId = document.getElementById('demo_id').value.trim();
-            const fileName = demoId ? `${demoId}.jpg` : 'QR_Pass.jpg';
+            const inputId = document.getElementById('nusuk_input').value.trim();
+            const fileName = inputId ? `${inputId}.jpg` : 'Permit_Card.jpg';
             
             const link = document.createElement('a');
             link.download = fileName;
@@ -424,10 +261,8 @@
             document.body.removeChild(link);
         }
 
-        // Auto render on page load
         window.onload = function() {
-            setAutoDate();
-            generateCard();
+            processNusukInput();
         };
     </script>
 
