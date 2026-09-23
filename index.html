@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nusuk Permit Generator</title>
+    <title>Nusuk Permit Generator - 10 Random Permit IDs</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root {
@@ -12,6 +12,7 @@
             --text-color: #1f2937;
             --btn-bg: #1e293b;
             --success-btn: #16a34a;
+            --accent-btn: #2563eb;
         }
 
         body {
@@ -36,7 +37,7 @@
             box-sizing: border-box;
         }
 
-        h2 { text-align: center; margin-top: 0; font-size: 20px; }
+        h2 { text-align: center; margin-top: 0; font-size: 20px; color: #111827; }
         
         .grid-2 {
             display: grid;
@@ -61,22 +62,26 @@
 
         .btn-group {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-top: 15px;
+            flex-wrap: wrap;
         }
 
         .action-btn {
             flex: 1;
-            padding: 12px;
+            padding: 11px;
             background-color: var(--btn-bg);
             color: white;
             border: none;
             border-radius: 6px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
+            text-align: center;
+            min-width: 120px;
         }
 
+        .refresh-btn { background-color: var(--accent-btn); }
         .download-btn { background-color: var(--success-btn); }
 
         #canvasContainer {
@@ -99,9 +104,16 @@
     <div class="container">
         <h2>Nusuk Permit Pass Generator</h2>
 
+        <div class="form-group">
+            <label>10 Random Permit IDs List (Choose One)</label>
+            <select id="permit_id_select" onchange="selectPermitId()">
+                <!-- 10 Random IDs auto-populated here -->
+            </select>
+        </div>
+
         <div class="grid-2">
             <div class="form-group">
-                <label>Permit ID (10 Digits)</label>
+                <label>Selected Permit ID (10 Digits)</label>
                 <input type="text" id="permit_id" value="1156259366">
             </div>
             <div class="form-group">
@@ -146,6 +158,7 @@
         </div>
 
         <div class="btn-group">
+            <button class="action-btn refresh-btn" onclick="generate10RandomIds()">Generate 10 New IDs</button>
             <button class="action-btn" onclick="generateCard()">Generate Card</button>
             <button class="action-btn download-btn" onclick="downloadCard()">Download JPG</button>
         </div>
@@ -158,6 +171,34 @@
     <div id="qrcode"></div>
 
     <script>
+        // 10 Random 10-Digit Permit IDs banane ka function
+        function generate10RandomIds() {
+            const selectEl = document.getElementById('permit_id_select');
+            selectEl.innerHTML = "";
+
+            const prefixes = ['11', '58'];
+
+            for (let i = 1; i <= 10; i++) {
+                const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+                const suffix = Math.floor(10000078 + Math.random() * 89999900).toString();
+                const fullPermitId = prefix + suffix;
+
+                const option = document.createElement('option');
+                option.value = fullPermitId;
+                option.textContent = `Permit #${i}: ${fullPermitId}`;
+                selectEl.appendChild(option);
+            }
+
+            // Pehla ID automatically field mein set kar ke card update karna
+            selectPermitId();
+        }
+
+        function selectPermitId() {
+            const selectedVal = document.getElementById('permit_id_select').value;
+            document.getElementById('permit_id').value = selectedVal;
+            generateCard();
+        }
+
         function generateCard() {
             const permitId = document.getElementById('permit_id').value.trim();
             const cardType = document.getElementById('card_type').value;
@@ -187,11 +228,11 @@
                 const W = 600;
                 const H = 1040;
 
-                // Outer Background
+                // Background
                 ctx.fillStyle = "#e5e7eb";
                 ctx.fillRect(0, 0, W, H);
 
-                // Main Inner Card Sheet
+                // Main Inner Sheet
                 ctx.fillStyle = "#ffffff";
                 ctx.beginPath();
                 ctx.roundRect(20, 20, W - 40, H - 40, 24);
@@ -209,7 +250,7 @@
                 ctx.font = "34px Arial, sans-serif";
                 ctx.fillText(visitTime, W / 2, 165);
 
-                // Dashed Line
+                // Dashed Separator
                 ctx.strokeStyle = "#e5e7eb";
                 ctx.lineWidth = 2;
                 ctx.setLineDash([8, 8]);
@@ -219,7 +260,7 @@
                 ctx.stroke();
                 ctx.setLineDash([]);
 
-                // QR Container Rendering
+                // QR Container
                 const boxX = (W - 320) / 2;
                 const boxY = 225;
 
@@ -271,12 +312,12 @@
                 ctx.font = "bold 32px Arial, sans-serif";
                 ctx.fillText(userInitial, circleX, circleY + 11);
 
-                // Label ("You")
+                // User Label
                 ctx.fillStyle = "#6b7280";
                 ctx.font = "20px Arial, sans-serif";
                 ctx.fillText(userLabel, W / 2, circleY + 62);
 
-                // Status Message Rendering
+                // Status Message Text
                 ctx.fillStyle = "#4b5563";
                 ctx.font = "20px Arial, sans-serif";
                 const statusY = circleY + 115;
@@ -289,7 +330,7 @@
                     ctx.fillText("approaching.", W / 2, statusY + 28);
                 }
 
-                // Option 3 aur Option 4 ke Bottom Actions (Cancel booking + Proceed notice)
+                // Option 3 & 4 Extra Messages
                 if (statusOption === 'opt3' || statusOption === 'opt4') {
                     ctx.fillStyle = "#dc2626";
                     ctx.font = "22px Arial, sans-serif";
@@ -316,8 +357,9 @@
             document.body.removeChild(link);
         }
 
+        // Page Load Hotay Hi 10 Random IDs Generate Aur Render Honge
         window.onload = function() {
-            generateCard();
+            generate10RandomIds();
         };
     </script>
 
